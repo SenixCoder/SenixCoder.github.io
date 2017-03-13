@@ -1,0 +1,273 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>SenixCoder&#39; Blog</title>
+  <meta name="author" content="Senix">
+  
+  <meta name="description" content="This is a noob&#39;s blog :)">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+  <meta property="og:site_name" content="SenixCoder&#39; Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="SenixCoder&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><script type="text/javascript" color="0,206,209" opacity='0.5' zIndex="-1" count="80" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+<div class="alignleft">
+  <h1><a href="/">SenixCoder&#39; Blog</a></h1>
+  <h2><a href="/">Forever or never.</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+    <li> <a href="/atom.xml">RSS</a> </li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper">
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-09-17T16:00:00.000Z"><a href="/2016/09/18/file_get_contents和cURL性能比较/">2016-09-18</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2016/09/18/file_get_contents和cURL性能比较/">file_get_contents和cURL性能比较</a></h1>
+  
+
+    </header>
+    <div class="entry">
+         <!--01-->
+        <div class="tocStart"></div>
+
+<!-- toc -->
+<ul>
+<li><a href="#file-get-contents-he-curl-wen-ding-xing-neng-bi-jiao-fen-xi">file_get_contents和cURL稳定性能比较分析</a><ul>
+<li><a href="#di-yi-ci-chang-shi">第一次尝试</a><ul>
+<li><a href="#zeng-jia-chao-shi-de-e-shi-jian-xian-zhi">增加超时的额时间限制</a></li>
+<li><a href="#yuan-yin">原因</a></li>
+</ul>
+</li>
+<li><a href="#gai-yong-curl">改用cURL</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+<p><div class="tocEnd"></div></p>
+<h1 id="file-get-contents和cURL稳定性能比较分析"><a href="#file-get-contents和cURL稳定性能比较分析" class="headerlink" title="file_get_contents和cURL稳定性能比较分析"></a>file_get_contents和cURL稳定性能比较分析</h1><hr>
+<p>前面写那个爬图片的爬虫的时候,初期我用的是file_get_contents()函数来获取图片内容,跑了一次发现下载下来的图片很多都不完整,无法显示全.当时我考虑的是可能是因为网络波动导致超时.改了很多遍,比如增加超时的时间限制/重新执行.都不是很满意</p>
+<p>我考虑的更大的因素是稳定性,能够稳定的获取一张完整的图片.因此暂时忽略这两个函数对url连接的速度分析.</p>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2016/09/18/file_get_contents和cURL性能比较/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-09-15T11:33:56.000Z"><a href="/2016/09/15/使用PHP爬取图片/">2016-09-15</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2016/09/15/使用PHP爬取图片/">PHP PHPQuery批量爬取图片</a></h1>
+  
+
+    </header>
+    <div class="entry">
+         <!--01-->
+        <div class="tocStart"></div>
+
+<!-- toc -->
+<ul>
+<li><a href="#php-phpquery-pi-liang-pa-qu-tu-pian">PHP PHPQuery批量爬取图片</a></li>
+<li><a href="#curl">cURL</a></li>
+<li><a href="#shi-yong-phpquery-chu-li-dom-wen-dang-nei-rong">使用PHPQuery处理DOM文档内容</a></li>
+<li><a href="#zhu-han-shu">主函数</a></li>
+<li><a href="#php-de-pcntl-kuo-zhan-shi-xian-duo-jin-cheng">PHP的pcntl扩展实现多进程</a><ul>
+<li><a href="#qi-ta">其他</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+<div class="tocEnd"></div>
+
+<h2 id="PHP-PHPQuery批量爬取图片"><a href="#PHP-PHPQuery批量爬取图片" class="headerlink" title="PHP PHPQuery批量爬取图片"></a>PHP PHPQuery批量爬取图片</h2><hr>
+<p>最近在一个小众的网站上看漫画,然而这个网站实在是太过于坑爹.不使用异步加载技术,而是使用分页,一页只显示20张图片,而且因为网站比较小众,服务器网络环境比较乱,</p>
+<p>加载图片实在是太慢,不能忍.于是一怒之下用PHP写了个抓图片的爬虫(懒癌驱动型编程)<del>(毕竟PHP是最好的语言)</del>.</p>
+<h2 id="cURL"><a href="#cURL" class="headerlink" title="cURL"></a>cURL</h2><p>PHP的cURL扩展允许和各种服务器使用各种类型的协议进行连接和通讯.</p>
+<p>此次需要爬取的网站并不需要登录,所以省去了cookie设置的一些麻烦.<br>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2016/09/15/使用PHP爬取图片/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-07-14T16:00:00.000Z"><a href="/2016/07/15/hello-world/">2016-07-15</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2016/07/15/hello-world/">Hello World</a></h1>
+  
+
+    </header>
+    <div class="entry">
+         <!--01-->
+        <h2 id="Hello-World"><a href="#Hello-World" class="headerlink" title="Hello World"></a>Hello World</h2><p>折腾了2个小时，也算是把Blog搭起来了。很早之前就有这个想法，直到这个暑假才开始认真的去做，已经是懒癌晚期了。</p>
+<p>在这之前已经把VPS，ss，centos还有LAMP一系列东西都配置好了，原打算blog用的是WordPress，都已经在本地配置好了，后来学长建议用Hexo，也顺便把荒废许久的github给捡起来。</p>
+<p>看学长学姐们的blog已经写了不少了，而我才刚刚起步，也要努力。<br>
+      
+    </div>
+    <footer>
+      
+        
+          <div class="alignleft">
+            <a href="/2016/07/15/hello-world/#more" class="more-link">Read More</a>
+          </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+<nav id="pagination">
+  
+  
+  <div class="clearfix"></div>
+</nav></div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:senixcoder.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/PHP/">PHP</a><small>2</small></li>
+  
+    <li><a href="/categories/PHP-爬虫/">PHP - 爬虫</a><small>0</small></li>
+  
+    <li><a href="/categories/日常/">日常</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://mikecoder.cn/" title="学长的博客">MikeCoder</a></li>
+<li><a href="http://maywanting.wang/" title="美美哒学姐的博客">May's Blog</a></li>
+</ul>
+</div>
+
+  
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <a href="/tags/PHP/" style="font-size: 20px;">PHP</a> <a href="/tags/PHPQuery/" style="font-size: 10px;">PHPQuery</a> <a href="/tags/爬虫/" style="font-size: 10px;">爬虫</a> <a href="/tags/随笔/" style="font-size: 10px;">随笔</a>
+            </canvas>
+        </div>
+    </div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 Senix
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.useso.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

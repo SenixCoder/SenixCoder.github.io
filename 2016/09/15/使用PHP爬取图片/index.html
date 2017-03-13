@@ -1,0 +1,226 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>PHP PHPQuery批量爬取图片 | SenixCoder&#39; Blog</title>
+  <meta name="author" content="Senix">
+  
+  <meta name="description" content="This is a noob&#39;s blog :)">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="PHP PHPQuery批量爬取图片"/>
+  <meta property="og:site_name" content="SenixCoder&#39; Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="SenixCoder&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><script type="text/javascript" color="0,206,209" opacity='0.5' zIndex="-1" count="80" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+<div class="alignleft">
+  <h1><a href="/">SenixCoder&#39; Blog</a></h1>
+  <h2><a href="/">Forever or never.</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+    <li> <a href="/atom.xml">RSS</a> </li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-09-15T11:33:56.000Z"><a href="/2016/09/15/使用PHP爬取图片/">2016-09-15</a></time>
+      
+      
+  
+    <h1 class="title">PHP PHPQuery批量爬取图片</h1>
+  
+
+    </header>
+    <div class="entry">
+         <!--02-->
+        <div class="toc">
+
+<!-- toc -->
+<ul>
+<li><a href="#php-phpquery-pi-liang-pa-qu-tu-pian">PHP PHPQuery批量爬取图片</a></li>
+<li><a href="#curl">cURL</a></li>
+<li><a href="#shi-yong-phpquery-chu-li-dom-wen-dang-nei-rong">使用PHPQuery处理DOM文档内容</a></li>
+<li><a href="#zhu-han-shu">主函数</a></li>
+<li><a href="#php-de-pcntl-kuo-zhan-shi-xian-duo-jin-cheng">PHP的pcntl扩展实现多进程</a><ul>
+<li><a href="#qi-ta">其他</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+</div>
+
+<h2 id="php-phpquery-pi-liang-pa-qu-tu-pian"><a href="#PHP-PHPQuery批量爬取图片" class="headerlink" title="PHP PHPQuery批量爬取图片"></a>PHP PHPQuery批量爬取图片<a href="php-phpquery-pi-liang-pa-qu-tu-pian" class="header-anchor">"#"</a></h2><hr>
+<p>最近在一个小众的网站上看漫画,然而这个网站实在是太过于坑爹.不使用异步加载技术,而是使用分页,一页只显示20张图片,而且因为网站比较小众,服务器网络环境比较乱,</p>
+<p>加载图片实在是太慢,不能忍.于是一怒之下用PHP写了个抓图片的爬虫(懒癌驱动型编程)<del>(毕竟PHP是最好的语言)</del>.</p>
+<h2 id="curl"><a href="#cURL" class="headerlink" title="cURL"></a>cURL<a href="curl" class="header-anchor">"#"</a></h2><p>PHP的cURL扩展允许和各种服务器使用各种类型的协议进行连接和通讯.</p>
+<p>此次需要爬取的网站并不需要登录,所以省去了cookie设置的一些麻烦.<br><a id="more"></a><br><figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line">* 获取链接内容并保存至指定路径中</div><div class="line">* <span class="doctag">@param</span> string $source 指定链接</div><div class="line">* <span class="doctag">@param</span> string $save   保存路径</div><div class="line">*/</div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">downloadImage</span><span class="params">($source,$save)</span> </span>&#123;</div><div class="line">    <span class="keyword">do</span> &#123;</div><div class="line">        $ch = curl_init(); <span class="comment">//初始化一个会话</span></div><div class="line">        curl_setopt($ch, CURLOPT_URL, $source);</div><div class="line">        curl_setopt($ch,CURLOPT_TIMEOUT,<span class="number">60</span>);<span class="comment">//超时时间,因为跨墙网络不稳定</span></div><div class="line">        curl_setopt($ch, CURLOPT_RETURNTRANSFER, <span class="keyword">true</span>);<span class="comment">//以文件流形式返回</span></div><div class="line">        curl_setopt($ch, CURLOPT_HEADER,<span class="number">0</span>); </div><div class="line">        $content = curl_exec($ch);<span class="comment">//执行会话,返回结果</span></div><div class="line">        curl_close($ch); <span class="comment">//释放连接</span></div><div class="line">    &#125; <span class="keyword">while</span>($content == <span class="keyword">FALSE</span>);<span class="comment">//当没有返回结果时(即因网络问题请求失败),重复上述步骤</span></div><div class="line"></div><div class="line">    file_put_contents($save, $content);<span class="comment">//写入路径中</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>提供图片链接可以直接爬取并保存至指定路径中,这个函数可以保证图片不会只显示一半/获取不到图片.并且相对于<code>file_get_contents()</code>函数网络性能更加稳定,请求释放连接速度更快.</p>
+<h2 id="shi-yong-phpquery-chu-li-dom-wen-dang-nei-rong"><a href="#使用PHPQuery处理DOM文档内容" class="headerlink" title="使用PHPQuery处理DOM文档内容"></a>使用PHPQuery处理DOM文档内容<a href="shi-yong-phpquery-chu-li-dom-wen-dang-nei-rong" class="header-anchor">"#"</a></h2><p>phpQuery是一个基于PHP的服务端开源项目，它可以让PHP开发人员轻松处理DOM文档内容，比如获取某新闻网站的头条信息。更有意思的是，它采用了jQuery的思想，你可以像使用jQuery一样处理页面内容，获取你想要的页面信息。</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">include &apos;phpQuery/phpQuery.php&apos;; </div><div class="line">phpQuery::newDocumentFile(&apos;http://example.com/example&apos;); </div><div class="line">echo pq(&quot;.h1&quot;)-&gt;html();</div></pre></td></tr></table></figure></p>
+<p>pq()跟jQuery的$()类似，jQuery的选择器基本上都能使用在phpQuery上，只要把”.”变成”-&gt;”。如上例中，pq(“.h1”)抓取了页面h1标签元素，然后用html()方法获取h1标签里的内容.</p>
+<p>这是我爬虫里面写的函数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line">* 爬取并保存第$page页面该页面所有漫画连接</div><div class="line">* @param int $page 页数</div><div class="line">* @todo DFS,链接存入数据库</div><div class="line">*/</div><div class="line">function saveComicLink($page = 1) &#123; </div><div class="line">    do &#123;</div><div class="line">        phpQuery::newDocumentFileHTML(&apos;http://example.com/html/category/tt/page/&apos;. $page);</div><div class="line">        $temp = pq(&apos;.h1&apos;);</div><div class="line">    &#125; while(count($temp) &lt; 1);//当没有获取到链接是,重复请求</div><div class="line">    </div><div class="line">    $i = 0;</div><div class="line">    $c = count($temp);</div><div class="line"></div><div class="line">    $link = fopen(&apos;D:\\comic\\link&apos; . $page . &apos;.txt&apos;,&apos;a&apos;) or die (&apos;Unable to open file&apos;); </div><div class="line">    // 写入文件</div><div class="line">    foreach ($temp as $key) &#123;</div><div class="line">        $href[$i] = pq($key)-&gt;find(&apos;a&apos;)-&gt;attr(&apos;href&apos;); //得到HTML文档中的href标签内容</div><div class="line">        fwrite($link, $href[$i++]);</div><div class="line">        if($i != $c)</div><div class="line">            fwrite($link, &quot;\r\n&quot;);</div><div class="line">    &#125;</div><div class="line">    fclose($link);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>写这个爬虫最麻烦的是因为网络不好导致各种获取不到HTML文档/图片内容.所以很多地方我都做了重复查询,防止漏链(毕竟不想跳情节)</p>
+<p>除此之外.当有多个HTML文档请求时<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">phpQuery::newDocumentFileHTML(&apos;http://example.com/1&apos;);</div><div class="line">phpQuery::newDocumentFileHTML(&apos;http://example.com/2&apos;);</div></pre></td></tr></table></figure></p>
+<p>选择器pq()永远属于最后一个文档.这一点需要认识到</p>
+<h2 id="zhu-han-shu"><a href="#主函数" class="headerlink" title="主函数"></a>主函数<a href="zhu-han-shu" class="header-anchor">"#"</a></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line">* 读取link$page.txt中存储的连接</div><div class="line">* @param int $page 页数</div><div class="line">* @return array $href 链接</div><div class="line">*/</div><div class="line">function readComicLink($page) &#123;</div><div class="line">    $link = fopen(&apos;D:\\comic\\link&apos; . $page . &apos;.txt&apos;, &apos;r&apos;) or die (&apos;Unable to open file&apos;);</div><div class="line">    $i = 0;</div><div class="line">    while(!feof($link))</div><div class="line">        $href[$i++] = trim(fgets($link));</div><div class="line">    </div><div class="line">    fclose($link);</div><div class="line">    return $href;</div><div class="line">&#125;</div><div class="line"></div><div class="line">//指定从第几页,第几篇漫画开始爬取</div><div class="line">echo &quot;Enter which page you want to spider\r\n&quot;;</div><div class="line">$p = trim(fgets(STDIN));</div><div class="line">echo &quot;Enter which number comic you want to start\r\n&quot;;</div><div class="line">$href_i = trim(fgets(STDIN));</div><div class="line">var_dump(&quot;Page: &quot; . $p . &quot; Start from NO. &quot; . $href_i);</div><div class="line"></div><div class="line">if(!file_exists(&quot;D:\\comic\\cn&quot;. $p ))</div><div class="line">    mkdir(&quot;D:\\comic\\cn&quot;. $p);</div><div class="line"></div><div class="line">if(!file_exists(&apos;D:\\comic\\link&apos; . $p . &apos;.txt&apos;))</div><div class="line">    saveComicLink($p);</div><div class="line"></div><div class="line">//获取链接</div><div class="line">$href = readComicLink($p);</div><div class="line"></div><div class="line">for (; $href_i &lt; count($href) ; $href_i ++)</div><div class="line">&#123;</div><div class="line">    $comic1 = $href[$href_i];</div><div class="line">    do &#123;</div><div class="line">        // 找到漫画有多少页</div><div class="line">        phpQuery::newDocumentFileHTML($comic1);</div><div class="line">        $last = pq(&apos;.single-navi:last&apos;)-&gt;text();</div><div class="line">    &#125; while(!isset($last));</div><div class="line">    </div><div class="line">    // 获取漫画图片所有的链接</div><div class="line">    $c = 0;</div><div class="line">    $img_href = array();</div><div class="line">    for($i = 1; $i &lt;= $last; $i++) &#123;</div><div class="line">        $page_t = $href[$href_i] . &apos;/&apos; . $i;</div><div class="line"></div><div class="line">        do &#123;</div><div class="line">            phpQuery::newDocumentFileHTML($page_t);</div><div class="line">            $img = pq(&apos;img&apos;);</div><div class="line">            $i_c = count($img);</div><div class="line">        &#125; while($i_c &lt; 1);</div><div class="line">        </div><div class="line">        foreach ($img as $key) </div><div class="line">            $img_href[pq($key)-&gt;attr(&apos;alt&apos;)] = pq($key)-&gt;attr(&apos;src&apos;);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 获取图片内容并写入</div><div class="line">    if(isset($img_href))</div><div class="line">    &#123;</div><div class="line">        if(! file_exists(&quot;D:\\comic\\cn&quot;. $p .&quot;\\&quot; . $href_i))</div><div class="line">        &#123;</div><div class="line">            mkdir(&quot;D:\\comic\\cn&quot;. $p .&quot;\\&quot; . $href_i);</div><div class="line">            var_dump(&quot;make dir&quot; . $href_i);</div><div class="line">        &#125;   </div><div class="line">        foreach ($img_href as $key) &#123;</div><div class="line">            $str = &apos;D:\\comic\\cn&apos; . $p .&apos;\\&apos;. $href_i . &apos;\\&apos; . implode(&apos;&apos;, array_keys($img_href,$key)) . &apos;.jpg&apos;;</div><div class="line"></div><div class="line">            if(!file_exists($str))</div><div class="line">            &#123;</div><div class="line">                downloadImage($key, $str);</div><div class="line">                var_dump(implode(&apos;&apos;, array_keys($img_href,$key)));</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    else </div><div class="line">        echo $img_href . &quot;未被设置&quot;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="php-de-pcntl-kuo-zhan-shi-xian-duo-jin-cheng"><a href="#PHP的pcntl扩展实现多进程" class="headerlink" title="PHP的pcntl扩展实现多进程"></a>PHP的pcntl扩展实现多进程<a href="php-de-pcntl-kuo-zhan-shi-xian-duo-jin-cheng" class="header-anchor">"#"</a></h2><p>PHP的多线程有点坑.我需要花点时间琢磨下,为了提高效率我现在使用的是php的多进程拓展.基本上开5个进程一晚上就可以爬取3个G的图片….开太多的进程对于站点服务器是个很大的负担,好孩子不要学.</p>
+<p>Example:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">//PHP多进程demo</div><div class="line">//fork10个进程</div><div class="line">for ($i = 0; $i &lt; 10; $i++) &#123;</div><div class="line">    $pid = pcntl_fork();</div><div class="line">    if ($pid == -1) &#123;</div><div class="line">        echo &quot;Could not fork!\n&quot;;</div><div class="line">        exit(1);</div><div class="line">    &#125;</div><div class="line">    if (!$pid) &#123;</div><div class="line">        echo &quot;child process $i running\n&quot;;</div><div class="line">        //子进程执行完毕之后就退出，以免继续fork出新的子进程</div><div class="line">        exit($i);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">//等待子进程执行完毕，避免出现僵尸进程</div><div class="line">while (pcntl_waitpid(0, $status) != -1) &#123;</div><div class="line">    $status = pcntl_wexitstatus($status);</div><div class="line">    echo &quot;Child $status completed\n&quot;;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="qi-ta"><a href="#其他" class="headerlink" title="其他"></a>其他<a href="qi-ta" class="header-anchor">"#"</a></h3><ul>
+<li><p>写这个爬虫开始的时候被网络波动折腾的够呛,本来图简单粗暴直接上的是file_get_contents(),但是下载下来的图片往往不全,而且有时候会断链,后来上了cURL拓展,图片倒是全的..但也会因为波动导致某一张图片被跳掉.所以后续的文档/图片请求都外套了循环防止链接被跳掉</p>
+</li>
+<li><p>写爬虫的时候本意是做的很小,因此一开始就没上数据库..后面发现也懒得加了.</p>
+</li>
+<li><p>后续会加入MySQL</p>
+</li>
+</ul>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/PHP/">PHP</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/PHP/">PHP</a>, <a href="/tags/爬虫/">爬虫</a>, <a href="/tags/PHPQuery/">PHPQuery</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+  <nav id="pagination" >
+      
+      <a href="/2016/09/18/file_get_contents和cURL性能比较/" class="alignleft prev" >上一页</a>
+      
+      
+      <a href="/2016/07/15/hello-world/" class="alignright next" >下一页</a>
+      
+      <div class="clearfix"></div>
+  </nav>
+
+  <section id="comments">
+    <div class="ds-thread" data-thread-key="/2016/09/15/使用PHP爬取图片/" data-title="PHP PHPQuery批量爬取图片" data-url="http://senixcoder.com/2016/09/15/使用PHP爬取图片/"></div>
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'senix'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+  </section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:senixcoder.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/PHP/">PHP</a><small>2</small></li>
+  
+    <li><a href="/categories/PHP-爬虫/">PHP - 爬虫</a><small>0</small></li>
+  
+    <li><a href="/categories/日常/">日常</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://mikecoder.cn/" title="学长的博客">MikeCoder</a></li>
+<li><a href="http://maywanting.wang/" title="美美哒学姐的博客">May's Blog</a></li>
+</ul>
+</div>
+
+  
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <a href="/tags/PHP/" style="font-size: 20px;">PHP</a> <a href="/tags/PHPQuery/" style="font-size: 10px;">PHPQuery</a> <a href="/tags/爬虫/" style="font-size: 10px;">爬虫</a> <a href="/tags/随笔/" style="font-size: 10px;">随笔</a>
+            </canvas>
+        </div>
+    </div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 Senix
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.useso.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>

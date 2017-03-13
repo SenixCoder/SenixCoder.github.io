@@ -1,0 +1,229 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>file_get_contents和cURL性能比较 | SenixCoder&#39; Blog</title>
+  <meta name="author" content="Senix">
+  
+  <meta name="description" content="This is a noob&#39;s blog :)">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="file_get_contents和cURL性能比较"/>
+  <meta property="og:site_name" content="SenixCoder&#39; Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.ico" rel="icon" type="image/x-ico">
+  <link rel="alternate" href="/atom.xml" title="SenixCoder&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+
+</head>
+
+
+<body>
+  <header id="header" class="inner"><script type="text/javascript" color="0,206,209" opacity='0.5' zIndex="-1" count="80" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+<div class="alignleft">
+  <h1><a href="/">SenixCoder&#39; Blog</a></h1>
+  <h2><a href="/">Forever or never.</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+    <li> <a href="/atom.xml">RSS</a> </li>
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div>
+</header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2016-09-17T16:00:00.000Z"><a href="/2016/09/18/file_get_contents和cURL性能比较/">2016-09-18</a></time>
+      
+      
+  
+    <h1 class="title">file_get_contents和cURL性能比较</h1>
+  
+
+    </header>
+    <div class="entry">
+         <!--02-->
+        <div class="toc">
+
+<!-- toc -->
+<ul>
+<li><a href="#file-get-contents-he-curl-wen-ding-xing-neng-bi-jiao-fen-xi">file_get_contents和cURL稳定性能比较分析</a><ul>
+<li><a href="#di-yi-ci-chang-shi">第一次尝试</a><ul>
+<li><a href="#zeng-jia-chao-shi-de-e-shi-jian-xian-zhi">增加超时的额时间限制</a></li>
+<li><a href="#yuan-yin">原因</a></li>
+</ul>
+</li>
+<li><a href="#gai-yong-curl">改用cURL</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+<p></div></p>
+<h1 id="file-get-contents-he-curl-wen-ding-xing-neng-bi-jiao-fen-xi"><a href="#file-get-contents和cURL稳定性能比较分析" class="headerlink" title="file_get_contents和cURL稳定性能比较分析"></a>file_get_contents和cURL稳定性能比较分析<a href="file-get-contents-he-curl-wen-ding-xing-neng-bi-jiao-fen-xi" class="header-anchor">"#"</a></h1><hr>
+<p>前面写那个爬图片的爬虫的时候,初期我用的是file_get_contents()函数来获取图片内容,跑了一次发现下载下来的图片很多都不完整,无法显示全.当时我考虑的是可能是因为网络波动导致超时.改了很多遍,比如增加超时的时间限制/重新执行.都不是很满意</p>
+<p>我考虑的更大的因素是稳定性,能够稳定的获取一张完整的图片.因此暂时忽略这两个函数对url连接的速度分析.</p>
+<a id="more"></a>
+<h2 id="di-yi-ci-chang-shi"><a href="#第一次尝试" class="headerlink" title="第一次尝试"></a>第一次尝试<a href="di-yi-ci-chang-shi" class="header-anchor">"#"</a></h2><h3 id="zeng-jia-chao-shi-de-e-shi-jian-xian-zhi"><a href="#增加超时的额时间限制" class="headerlink" title="增加超时的额时间限制"></a>增加超时的额时间限制<a href="zeng-jia-chao-shi-de-e-shi-jian-xian-zhi" class="header-anchor">"#"</a></h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$opts = array(</div><div class="line">    &apos;http&apos; =&gt; &quot;GET&quot;,</div><div class="line">    &apos;timeout&apos; =&gt;60 </div><div class="line">    );</div><div class="line">$temp = stream_context_create($opts);</div><div class="line">$contents = file_get_contents(&apos;http://wwww.example.com/1&apos;, FALSE, $temp);</div></pre></td></tr></table></figure>
+<p>我设置了超时时间为60s,这次运行的比上次好了那么一丢丢,然而图片还是没能下载完…这破网实在是太慢了.目测是架设在美国的吧.</p>
+<p>除此之外,还有我还试了下W3C提供的超时处理的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$cnt=0; </div><div class="line">while($cnt &lt; 3 &amp;&amp; ($str=@file_get_contents(&apos;http://www.w3cschool.cn&apos;))===FALSE) </div><div class="line">$cnt++;</div></pre></td></tr></table></figure>
+<p>然而没有什么用啊老师.这jpg格式的图片是顺序工作模式啊,接收多少显示多少,就是说,每张图片都可以获得,但大的图片下载不完.所以实际上这个循环是没有什么用的.</p>
+<h3 id="yuan-yin"><a href="#原因" class="headerlink" title="原因"></a>原因<a href="yuan-yin" class="header-anchor">"#"</a></h3><ul>
+<li>file_get_contents()每次请求都会重新做DNS查询,不支持对DNS信息.file_get_contents()实际上没有经过网页,所以不做缓存.</li>
+<li>file_get_contents()在请求HTTP时,使用的是http_fopen_wrapper,不会keeplive.在请求多个连接时,性能不佳</li>
+</ul>
+<h2 id="gai-yong-curl"><a href="#改用cURL" class="headerlink" title="改用cURL"></a>改用cURL<a href="gai-yong-curl" class="header-anchor">"#"</a></h2><p>cURL相对于file_get_contents() 有如下优点</p>
+<ul>
+<li>cURL能够缓存DNS信息,在处理多次url请求时,在请求速度上cURL更快</li>
+<li>file_get_contents()需要开启allow_url_fopen,用的是fopen包装器.不能keeplive,而cURL可以.因此,在打开一个持续连接(例如下载图片),多次请求时,cURL时间效率上更好</li>
+<li>cURL支持HTTPS认证,HTTP POST,HTTP GET,FTP上传,cookies,下载/上传的断点续传.功能十分强大</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">function downloadImage($source,$save)</div><div class="line">&#123;</div><div class="line">    do &#123;</div><div class="line">        $ch = curl_init();</div><div class="line">        curl_setopt($ch, CURLOPT_URL, $source);</div><div class="line">        curl_setopt($ch,CURLOPT_TIMEOUT,60);</div><div class="line">        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);</div><div class="line">        curl_setopt($ch, CURLOPT_HEADER,0); </div><div class="line">        $content = curl_exec($ch);</div><div class="line">        curl_close($ch); </div><div class="line">    &#125; while($content == FALSE);</div><div class="line"></div><div class="line">    file_put_contents($save, $content);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我在写函数的时,最开始外面是没有包裹do-while()循环的,跑了一遍发现,图片确实都是完整的,然而会有页码上的缺漏现象.我思考了下,认为是网络环境波动导致的cURL在超时限时内无法获得握手,因此没有返回内容.所以为了防止缺漏,我在外面包裹了一层do-while()</p>
+<p>效果非常好=W=,晚上睡觉的时候开了5个进程在跑.一晚上就下载了4个G的图</p>
+<p>##小结</p>
+<ul>
+<li>file_get_contents()每次请求都重新做DNS查询,不对DNS信息做缓存.cURL会自动对DNS信息进行缓存.因此对同一域名下网页/图片请求只需要一次DNS查询.减少了DNS查询次数,因此cURL性能会比file_get_contents()更快一点</li>
+<li>file_get_contents()在请求HTTP时,使用的是http_fopen_wrapper,不能保持活跃,因此在对于请求一个持续连接/多次请求多个页面时,file_get_contents()在稳定性大大不如cURL</li>
+<li>cURL支持更多的请求:POST/FTP/表单提交/断点续传等等.file_get_contents()支持get/post获取数据.</li>
+</ul>
+<p>即:cURL在效率上和稳定性上比file_get_contents()更好.</p>
+
+      
+    </div>
+    <footer>
+      
+        
+  
+  <div class="categories">
+    <a href="/categories/PHP/">PHP</a>
+  </div>
+
+        
+  
+  <div class="tags">
+    <a href="/tags/PHP/">PHP</a>
+  </div>
+
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+  <nav id="pagination" >
+      
+      
+      <a href="/2016/09/15/使用PHP爬取图片/" class="alignright next" >下一页</a>
+      
+      <div class="clearfix"></div>
+  </nav>
+
+  <section id="comments">
+    <div class="ds-thread" data-thread-key="/2016/09/18/file_get_contents和cURL性能比较/" data-title="file_get_contents和cURL性能比较" data-url="http://senixcoder.com/2016/09/18/file_get_contents和cURL性能比较/"></div>
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'senix'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+  </section>
+
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="搜索">
+    <input type="hidden" name="q" value="site:senixcoder.com">
+  </form>
+</div>
+
+  
+<div class="widget tag">
+  <h3 class="title">分类</h3>
+  <ul class="entry">
+  
+    <li><a href="/categories/PHP/">PHP</a><small>2</small></li>
+  
+    <li><a href="/categories/PHP-爬虫/">PHP - 爬虫</a><small>0</small></li>
+  
+    <li><a href="/categories/日常/">日常</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+
+  <div class="widget tag">
+<h3 class="title">友情链接</h3>
+<ul class="entry">
+<li><a href="http://mikecoder.cn/" title="学长的博客">MikeCoder</a></li>
+<li><a href="http://maywanting.wang/" title="美美哒学姐的博客">May's Blog</a></li>
+</ul>
+</div>
+
+  
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">标签云</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <a href="/tags/PHP/" style="font-size: 20px;">PHP</a> <a href="/tags/PHPQuery/" style="font-size: 10px;">PHPQuery</a> <a href="/tags/爬虫/" style="font-size: 10px;">爬虫</a> <a href="/tags/随笔/" style="font-size: 10px;">随笔</a>
+            </canvas>
+        </div>
+    </div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2017 Senix
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.useso.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
